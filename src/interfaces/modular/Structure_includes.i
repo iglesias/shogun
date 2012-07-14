@@ -14,6 +14,8 @@
  #include <shogun/structure/StructuredModel.h>
  #include <shogun/structure/MulticlassModel.h>
  #include <shogun/structure/MulticlassSOLabels.h>
+ #include <shogun/structure/HMSVMModel.h>
+ #include <shogun/structure/HMSVMLabels.h>
 
 #ifdef USE_MOSEK
  #include <shogun/structure/PrimalMosekSOSVM.h>

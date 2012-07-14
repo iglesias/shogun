@@ -24,6 +24,9 @@
 %rename(MulticlassModel) CMulticlassModel;
 %rename(MulticlassSOLabels) CMulticlassSOLabels;
 %rename(RealNumber) CRealNumber;
+%rename(HMSVMModel) CHMSVMModel;
+%rename(HMSVMLabels) CHMSVMLabels;
+%rename(Sequence) CSequence;
 
 #ifdef USE_MOSEK
 %rename(PrimalMosekSOSVM) CPrimalMosekSOSVM;
@@ -45,6 +48,8 @@
 %include <shogun/structure/StructuredModel.h>
 %include <shogun/structure/MulticlassModel.h>
 %include <shogun/structure/MulticlassSOLabels.h>
+%include <shogun/structure/HMSVMModel.h>
+%include <shogun/structure/HMSVMLabels.h>
 
 #ifdef USE_MOSEK
 %include <shogun/structure/PrimalMosekSOSVM.h>
