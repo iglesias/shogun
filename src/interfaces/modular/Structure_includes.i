@@ -16,6 +16,9 @@
  #include <shogun/structure/MulticlassSOLabels.h>
  #include <shogun/structure/HMSVMModel.h>
  #include <shogun/structure/HMSVMLabels.h>
+ #include <shogun/structure/StateModelTypes.h>
+ #include <shogun/structure/StateModel.h>
+ #include <shogun/structure/TwoStateModel.h>
 
 #ifdef USE_MOSEK
  #include <shogun/structure/PrimalMosekSOSVM.h>

@@ -27,6 +27,8 @@
 %rename(HMSVMModel) CHMSVMModel;
 %rename(HMSVMLabels) CHMSVMLabels;
 %rename(Sequence) CSequence;
+%rename(StateModel) CStateModel;
+%rename(TwoStateModel) CTwoStateModel;
 
 #ifdef USE_MOSEK
 %rename(PrimalMosekSOSVM) CPrimalMosekSOSVM;
@@ -50,6 +52,9 @@
 %include <shogun/structure/MulticlassSOLabels.h>
 %include <shogun/structure/HMSVMModel.h>
 %include <shogun/structure/HMSVMLabels.h>
+%include <shogun/structure/StateModelTypes.h>
+%include <shogun/structure/StateModel.h>
+%include <shogun/structure/TwoStateModel.h>
 
 #ifdef USE_MOSEK
 %include <shogun/structure/PrimalMosekSOSVM.h>
