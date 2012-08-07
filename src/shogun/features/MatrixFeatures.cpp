@@ -210,7 +210,6 @@ template< class ST > void CMatrixFeatures< ST >::cleanup_feature_vectors(
 	}
 }
 
-
 template class CMatrixFeatures<bool>;
 template class CMatrixFeatures<char>;
 template class CMatrixFeatures<int8_t>;

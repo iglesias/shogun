@@ -15,6 +15,7 @@
 #include <shogun/structure/HMSVMLabels.h>
 #include <shogun/structure/StateModelTypes.h>
 #include <shogun/structure/StateModel.h>
+#include <shogun/lib/DynamicObjectArray.h>
 
 namespace shogun
 {
@@ -129,9 +130,6 @@ class CHMSVMModel : public CStructuredModel
 		void init();
 
 	private:
-		/** the number of states */
-		int32_t m_num_states;
-
 		/** the number of observations */
 		int32_t m_num_obs;
 
@@ -146,6 +144,15 @@ class CHMSVMModel : public CStructuredModel
 
 		/** emission weights used in Viterbi */
 		SGVector< float64_t > m_emission_weights;
+
+		/** number of points for each PLiF */
+		int32_t m_num_plif_nodes;
+
+		/** plif matrix, num_states x num_features */
+		CDynamicObjectArray* m_plif_matrix;
+
+		/** whether to use plifs */
+		bool m_use_plifs;
 
 }; /* class CHMSVMModel */
 
