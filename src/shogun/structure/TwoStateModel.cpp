@@ -11,6 +11,7 @@
 #include <shogun/structure/TwoStateModel.h>
 #include <shogun/mathematics/Math.h>
 #include <shogun/features/MatrixFeatures.h>
+#include <shogun/structure/Plif.h>
 
 using namespace shogun;
 
@@ -138,6 +139,28 @@ void CTwoStateModel::reshape_emission_params(SGVector< float64_t >& emission_wei
 				em_idx = s*num_feats*num_obs + f*num_obs + o;
 				emission_weights[em_idx] = w[w_idx++];
 			}
+		}
+	}
+}
+
+void CTwoStateModel::reshape_emission_params(CDynamicObjectArray* plif_matrix,
+		SGVector< float64_t > w, int32_t num_feats, int32_t num_plif_nodes)
+{
+	CPlif* plif;
+	index_t p_idx, w_idx = m_num_transmission_params;
+	for ( int32_t s = 2 ; s < m_num_states ; ++s )
+	{
+		for ( int32_t f = 0 ; f < num_feats ; ++f )
+		{
+			SGVector< float64_t > penalties(num_plif_nodes);
+			p_idx = 0;
+
+			for ( int32_t i = 0 ; i < num_plif_nodes ; ++i )
+				penalties[p_idx++] = w[w_idx++];
+
+			plif = (CPlif*) plif_matrix->get_element(m_num_states*f + s);
+			plif->set_plif_penalty(penalties);
+			SG_UNREF(plif);
 		}
 	}
 }

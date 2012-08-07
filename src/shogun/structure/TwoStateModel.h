@@ -56,23 +56,36 @@ class CTwoStateModel : public CStateModel
 		 * This vector is suitable to iterate through when constructing the
 		 * emission matrix used in Viterbi decoding
 		 *
+		 * @param emission_weights where the emission parameters will be arranged
 		 * @param w the weight vector
 		 * @param num_feats number of features
 		 * @param num_obs number of emission scores per feature and state
-		 *
-		 * @return a vector with the emission parameters
 		 */
 		virtual void reshape_emission_params(SGVector< float64_t >& emission_weights,
 				SGVector< float64_t > w, int32_t num_feats, int32_t num_obs);
+
+		/**
+		 * arranges the emission parameters of the weight vector into a matrix
+		 * of PLiFs adding zero elements for the states whose parameters are not
+		 * learnt.
+		 *
+		 * @param plif_matrix matrix of PLiFs where the emission weights will be
+		 * arranged
+		 * @param w the weight vector
+		 * @param num_feats number of features
+		 * @param num_obs number of emission scores per feature and state
+		 */
+		virtual void reshape_emission_params(CDynamicObjectArray* plif_matrix,
+			SGVector< float64_t > w, int32_t num_feats, int32_t num_plif_nodes);
 
 		/**
 		 * arranges the tranmission parameterss of the weight vector into a matrix
 		 * adding zero elements for the states whose parameters are not learnt.
 		 * This matrix is suitable to iterate during Viterbi decoding
 		 *
+		 * @param transmission_matrix where the transmission parameters will be
+		 * arranged
 		 * @param w the weight vector
-		 *
-		 * @return a matrix with the transmission parameters
 		 */
 		virtual void reshape_transmission_params(
 				SGMatrix< float64_t >& transmission_matrix,
