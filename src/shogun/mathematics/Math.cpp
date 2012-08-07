@@ -189,3 +189,19 @@ float64_t CMath::Align(
   // return the final cost
   return actCost;
 }
+
+SGVector<float64_t> CMath::linspace(float64_t start, float64_t end, int32_t N)
+{
+	SGVector<float64_t> ret(N);
+	float64_t delta = (end-start) / (N-1);
+	float64_t v = start;
+	index_t i = 0;
+	while ( v <= end )
+	{
+		ret[i++] = v;
+		v += delta;
+	}
+	ret[N-1] = end;
+
+	return ret;
+}

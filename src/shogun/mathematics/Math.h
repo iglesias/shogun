@@ -1132,6 +1132,8 @@ class CMath : public CSGObject
 #endif //USE_LOGSUMARRAY
 				//@}
 
+		static SGVector<float64_t> linspace(float64_t start, float64_t end, int32_t N = 100);
+
 				/** @return object name */
 				inline virtual const char* get_name() const { return "Mathematics"; }
 	public:
