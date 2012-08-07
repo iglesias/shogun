@@ -411,7 +411,7 @@ void CMosek::display_problem()
 			float64_t qij;
 			m_rescode = MSK_getqobjij(m_task, i, j, &qij);
 			if ( qij != 0.0 )
-				SG_PRINT("(%d,%d)\t%.2f\n", i, j, qij);
+				SG_PRINT("(%4d,%4d)\t%6.2f\n", i, j, qij);
 		}
 	}
 	SG_PRINT("\n");
@@ -429,7 +429,7 @@ void CMosek::display_problem()
 			float64_t aij;
 			m_rescode = MSK_getaij(m_task, i, j, &aij);
 			if ( aij != 0.0 )
-				SG_PRINT("(%d,%d)\t%.2f\n", i, j, aij);
+				SG_PRINT("(%4d,%4d)\t%6.2f\n", i, j, aij);
 		}
 	}
 	SG_PRINT("\n");
