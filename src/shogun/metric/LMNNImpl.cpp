@@ -32,10 +32,10 @@ bool CImpostorNode::operator<(const CImpostorNode& rhs) const
 {
 	if (example == rhs.example)
 	{
-		if (target == rhs.target)
-			return impostor < rhs.impostor;
-		else
+		if (impostor == rhs.impostor)
 			return target < rhs.target;
+		else
+			return impostor < rhs.impostor;
 	}
 	else
 		return example < rhs.example;
@@ -359,20 +359,41 @@ ImpostorsSetType CLMNNImpl::find_impostors_approx(const MatrixXd& LX, const Matr
 	// initialize empty impostors set
 	ImpostorsSetType N = ImpostorsSetType();
 
-	// find in the exact set of impostors computed last, the triplets that remain impostors
-	for (ImpostorsSetType::iterator it = Nexact.begin(); it != Nexact.end(); ++it)
+	// handle the case where the exact set of impostors is empty
+	if (!Nexact.empty())
 	{
-		// find in target_nn(:,it->example) the position of the target neighbor it->target
-		index_t target_idx = 0;
-		while (target_nn(target_idx, it->example)!=it->target && target_idx<target_nn.num_rows)
-			++target_idx;
+		// iterators for the current impostor triplet and one position forward
+		ImpostorsSetType::iterator it = Nexact.begin();
+		ImpostorsSetType::iterator runit = Nexact.begin();
+		++runit;
 
-		REQUIRE(target_idx<target_nn.num_rows, "The index of the target neighbour in the "
-				"impostors set was not found in the target neighbours matrix. "
-				"There must be a bug in find_impostors_exact.\n")
+		// find in the exact set of impostors computed last, the triplets that remain impostors
+		do
+		{
+			// distance between the current example and its impostor
+			float64_t distance = SUMSQCOLS(LX.col(it->example) - LX.col(it->impostor)).coeff(0);
 
-		if ( SUMSQCOLS(LX.col(it->example) - LX.col(it->impostor)).coeff(0) <= sqdists(target_idx, it->example) )
-			N.insert(*it);
+			do
+			{
+				SG_SPRINT("%d %d %d\n", it->example, it->impostor, it->target);
+
+				// find in target_nn(:,it->example) the position of the target neighbor it->target
+				index_t target_idx = 0;
+				while (target_nn(target_idx, it->example)!=it->target && target_idx<target_nn.num_rows)
+					++target_idx;
+
+				REQUIRE(target_idx<target_nn.num_rows, "The index of the target neighbour in the "
+						"impostors set was not found in the target neighbours matrix. "
+						"There must be a bug in find_impostors_exact.\n")
+
+				if (distance<=sqdists(target_idx, it->example))
+					N.insert(*it);
+
+				++it;
+				++runit;
+			} while (it->impostor==runit->impostor && it->example==runit->example && runit!=Nexact.end());
+
+		} while (runit!=Nexact.end());
 	}
 
 	SG_SDEBUG("Leaving CLMNNImpl::find_impostors_approx().\n")

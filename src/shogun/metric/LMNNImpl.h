@@ -53,9 +53,9 @@ struct CImpostorNode
 	/**
 	 * The index of the example defines which impostor node is larger
 	 * (the larger example index, the larger impostor node). In case
-	 * of equality, then the target index decides, and, in the event
-	 * of equality in both example and target indices. then the impostors
-	 * defines which node is largest.
+	 * of equality, then the impostor index decides, and, in the event
+	 * of equality in both example and impostor indices, then the target
+	 * neighbour defines which node is larger.
 	 *
 	 * @param rhs right hand side argument of the operator
 	 * @return whether the lhs argument was smaller than the rhs, equal to,
