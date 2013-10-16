@@ -560,3 +560,198 @@ cd src && make unit-tests
 
 
 To make a release, refer to the Makefile in the root dir of the repo.
+
+
+### This is info that has to be merged
+
+We are now going to define our own kernel, a linear like kernel defined on standard double precision floating point vectors. We define it as
+
+$k({\bf x}, {\bf x'}) = \sum_{i=1}^D x_i \cdot x'_{D-i+1}$
+
+where D is the dimensionality of the data. To implement this kernel we need to derive a class say CReverseLinearKernel from CSimpleKernel<float64_t> (for strings it would be CStringKernel, for sparse features CSparseKernel).
+
+Essentially we only need to overload the CKernel::compute() function with our own implementation of compute. All the rest gets empty defaults. An example for our compute() function could be
+
+virtual float64_t compute(int32_t idx_a, int32_t idx_b)
+{
+    int32_t alen, blen;
+    bool afree, bfree;
+
+    float64_t* avec=
+        ((CSimpleFeatures<float64_t>*) lhs)->get_feature_vector(idx_a, alen, afree);
+    float64_t* bvec=
+        ((CSimpleFeatures<float64_t>*) rhs)->get_feature_vector(idx_b, blen, bfree);
+
+    ASSERT(alen==blen);
+
+    float64_t result=0;
+    for (int32_t i=0; i<alen; i++)
+        result+=avec[i]*bvec[alen-i-1];
+
+    ((CSimpleFeatures<float64_t>*) lhs)->free_feature_vector(avec, idx_a, afree);
+    ((CSimpleFeatures<float64_t>*) rhs)->free_feature_vector(bvec, idx_b, bfree);
+
+    return result;
+}
+So for two indices idx_a (for vector a) and idx_b (for vector b) we obtain the corresponding pointers to the feature vectors avec and bvec, do our two line computation (for loop in the middle) and ``free'' the feature vectors again. It should be noted that in most cases getting the feature vector is actually a single memory access operation (and free_feature_vector is a nop in this case). However, when preprocessor objects are attached to the feature object they could potentially perform on-the-fly processing operations.
+
+A complete, fully working example could look like this
+
+#include <shogun/features/DenseFeatures.h>
+#include <shogun/kernel/DotKernel.h>
+#include <shogun/base/init.h>
+#include <shogun/lib/common.h>
+#include <shogun/io/SGIO.h>
+#include <stdio.h>
+
+using namespace shogun;
+
+class CReverseLinearKernel : public CDotKernel
+{
+public:
+    /** default constructor */
+    CReverseLinearKernel() : CDotKernel(0)
+    {
+    }
+
+    /** destructor */
+    virtual ~CReverseLinearKernel()
+    {
+    }
+
+    /** initialize kernel
+     *
+     * @param l features of left-hand side
+     * @param r features of right-hand side
+     * @return if initializing was successful
+     */
+    virtual bool init(CFeatures* l, CFeatures* r)
+    {
+        CDotKernel::init(l, r);
+        return init_normalizer();
+    }
+
+    /** load kernel init_data
+     *
+     * @param src file to load from
+     * @return if loading was successful
+     */
+    virtual bool load_init(FILE* src)
+    {
+        return false;
+    }
+
+    /** save kernel init_data
+     *
+     * @param dest file to save to
+     * @return if saving was successful
+     */
+    virtual bool save_init(FILE* dest)
+    {
+        return false;
+    }
+
+    /** return what type of kernel we are
+     *
+     * @return kernel type UNKNOWN (as it is not part
+     * 			officially part of shogun)
+     */
+    virtual EKernelType get_kernel_type()
+    {
+        return K_UNKNOWN;
+    }
+
+    /** return the kernel's name
+     *
+     * @return name "Reverse Linear"
+     */
+    inline virtual const char* get_name() const
+    {
+        return "ReverseLinear";
+    }
+
+protected:
+    /** compute kernel function for features a and b
+     * idx_{a,b} denote the index of the feature vectors
+     * in the corresponding feature object
+     *
+     * @param idx_a index a
+     * @param idx_b index b
+     * @return computed kernel function at indices a,b
+     */
+    virtual float64_t compute(int32_t idx_a, int32_t idx_b)
+    {
+        int32_t alen, blen;
+        bool afree, bfree;
+
+        float64_t* avec=
+            ((CDenseFeatures<float64_t>*) lhs)->get_feature_vector(idx_a, alen, afree);
+        float64_t* bvec=
+            ((CDenseFeatures<float64_t>*) rhs)->get_feature_vector(idx_b, blen, bfree);
+
+        ASSERT(alen==blen);
+
+        float64_t result=0;
+        for (int32_t i=0; i<alen; i++)
+            result+=avec[i]*bvec[alen-i-1];
+
+        ((CDenseFeatures<float64_t>*) lhs)->free_feature_vector(avec, idx_a, afree);
+        ((CDenseFeatures<float64_t>*) rhs)->free_feature_vector(bvec, idx_b, bfree);
+
+        return result;
+    }
+};
+
+void print_message(FILE* target, const char* str)
+{
+    fprintf(target, "%s", str);
+}
+
+int main(int argc, char** argv)
+{
+    init_shogun(&print_message);
+
+    // create some data
+    SGMatrix<float64_t> matrix(2,3);
+    for (int32_t i=0; i<6; i++)
+        matrix.matrix[i]=i;
+
+    // create three 2-dimensional vectors 
+    // shogun will now own the matrix created
+    CDenseFeatures<float64_t>* features= new CDenseFeatures<float64_t>();
+    features->set_feature_matrix(matrix);
+
+    // create reverse linear kernel
+    CReverseLinearKernel* kernel = new CReverseLinearKernel();
+    kernel->init(features,features);
+
+    // print kernel matrix
+    for (int32_t i=0; i<3; i++)
+    {
+        for (int32_t j=0; j<3; j++)
+            SG_SPRINT("%f ", kernel->kernel(i,j));
+
+        SG_SPRINT("\n");
+    }
+
+    // free up memory
+    SG_UNREF(kernel);
+
+    exit_shogun();
+    return 0;
+}
+
+As you notice only a few other functions are defined returning name of the object, and object id and allow for loading/saving of kernel initialization data. No magic really, the same holds when you want to incorporate a new SVM (derive from CSVM or CLinearClassifier if it is a linear SVM) or create new feature objects (derive from CFeatures or CSimpleFeatures, CStringFeatures or CSparseFeatures). For the SVM you would only have to override the CSVM::train() function, parameter settings like epsilon, C and evaluating SVMs is done naturally by the CSVM base class.
+
+In case you would want to integrate this into shoguns modular interfaces, all you have to do is to put this class in a header file and to include the header file in the corresponding .i file (in this case src/modular/Kernel.i). It is easiest to search for a similarly wrapped object and just fill in the same three lines: in the %{ %} block (that is ignored by swig - the program we use to generate the modular python/octave interface wrappers)
+
+%{
+#include <shogun/kernel/ReverseLinearKernel.h>
+%}
+then remove the C prefix (if you had one)
+
+%rename(ReverseLinearKernel) CReverseLinearKernel;
+and finally tell swig to wrap all functions found in the header
+
+%include <shogun/kernel/ReverseLinearKernel.h>
+In case you got your object working we will happily integrate it into shogun provided you follow a number of basic coding conventions detailed in README.developer (see FORMATTING for formatting instructions, MACROS on how to use and name macros, TYPES on which types to use, FUNCTIONS on how functions should look like and NAMING CONVENTIONS for the naming scheme. Note that in case you change the API in a way that breaks ABI compatibility you need to increase the major number of the libshogun soname (see Libshogun SONAME ).
